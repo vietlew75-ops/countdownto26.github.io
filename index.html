@@ -10,43 +10,75 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Syne:wght@700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
     <style>
         :root {
+            /* Default: Midnight Glow */
             --accent: #fbbf24;
             --accent-glow: rgba(251, 191, 36, 0.4);
-            --bg: #050505;
+            --bg-start: #1a1033;
+            --bg-end: #050505;
+            --text-main: #ffffff;
+            --text-sub: #94a3b8;
+            --glass: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --transition: 0.8s cubic-bezier(0.4, 0, 0.2, 1);
         }
+
+        body.theme-frost {
+            --accent: #06b6d4;
+            --accent-glow: rgba(6, 182, 212, 0.4);
+            --bg-start: #e2e8f0;
+            --bg-end: #f8fafc;
+            --text-main: #0f172a;
+            --text-sub: #64748b;
+            --glass: rgba(0, 0, 0, 0.03);
+            --glass-border: rgba(0, 0, 0, 0.1);
+        }
+
+        body.theme-cyber {
+            --accent: #f43f5e;
+            --accent-glow: rgba(244, 63, 94, 0.4);
+            --bg-start: #0f172a;
+            --bg-end: #020617;
+            --text-main: #f1f5f9;
+            --text-sub: #38bdf8;
+            --glass: rgba(15, 23, 42, 0.6);
+            --glass-border: rgba(56, 189, 248, 0.2);
+        }
+
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: var(--bg);
-            color: white;
+            background-color: var(--bg-end);
+            color: var(--text-main);
             overflow: hidden;
             margin: 0;
+            transition: background-color var(--transition), color var(--transition);
         }
         .font-syne { font-family: 'Syne', sans-serif; }
         .font-mono-modern { font-family: 'Space Grotesk', monospace; }
 
-        /* Modern Glassmorphism */
         .glass-premium {
-            background: rgba(255, 255, 255, 0.03);
+            background: var(--glass);
             backdrop-filter: blur(20px) saturate(180%);
             -webkit-backdrop-filter: blur(20px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+            transition: background var(--transition), border var(--transition), box-shadow var(--transition);
         }
 
         .glow-accent {
             filter: drop-shadow(0 0 15px var(--accent-glow));
+            color: var(--accent);
+            transition: color var(--transition), filter var(--transition);
         }
 
-        /* Animated background gradient */
         .bg-gradient-mesh {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: radial-gradient(circle at 50% 50%, #1a1033 0%, #050505 100%);
+            background: radial-gradient(circle at 50% 50%, var(--bg-start) 0%, var(--bg-end) 100%);
             z-index: -2;
-            transition: background 3s ease;
+            transition: background var(--transition);
         }
 
         .celebration-bg {
@@ -64,20 +96,29 @@
         .countdown-card {
             transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
-        .countdown-card:hover {
-            transform: translateY(-5px);
-            border-color: rgba(251, 191, 36, 0.3);
+        
+        .title-gradient {
+            background: linear-gradient(to bottom right, var(--text-main) 30%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            transition: background var(--transition);
         }
 
-        .celebrate-card {
-            transform: scale(1.1);
-            border-color: rgba(251, 191, 36, 0.6) !important;
-            box-shadow: 0 0 50px rgba(251, 191, 36, 0.2);
+        .theme-btn {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 50;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
         }
-
-        .resolution-item {
-            animation: slideIn 0.4s ease-out forwards;
-        }
+        .theme-btn:hover { transform: scale(1.1) rotate(15deg); }
 
         @keyframes slideIn {
             from { opacity: 0; transform: translateX(-10px); }
@@ -89,44 +130,31 @@
             10% { transform: translate(-1px, -2px) rotate(-1deg); }
             20% { transform: translate(-3px, 0px) rotate(1deg); }
             30% { transform: translate(3px, 2px) rotate(0deg); }
-            40% { transform: translate(1px, -1px) rotate(1deg); }
-            50% { transform: translate(-1px, 2px) rotate(-1deg); }
-            60% { transform: translate(-3px, 1px) rotate(0deg); }
-            70% { transform: translate(3px, 1px) rotate(-1deg); }
-            80% { transform: translate(-1px, -1px) rotate(1deg); }
-            90% { transform: translate(1px, 2px) rotate(0deg); }
             100% { transform: translate(1px, -2px) rotate(-1deg); }
         }
 
-        .animate-shake {
-            animation: shake 0.3s infinite;
-        }
+        .animate-shake { animation: shake 0.3s infinite; }
 
         @keyframes rainbow-text {
             0% { filter: hue-rotate(0deg); }
             100% { filter: hue-rotate(360deg); }
         }
-
-        .rainbow {
-            animation: rainbow-text 4s linear infinite;
-        }
-
-        /* Custom Scrollbar */
+        .rainbow { animation: rainbow-text 4s linear infinite; }
+        
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(251, 191, 36, 0.2); border-radius: 10px; }
-        
-        .title-gradient {
-            background: linear-gradient(to bottom right, #fff 30%, #fbbf24 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--accent); opacity: 0.2; border-radius: 10px; }
     </style>
 </head>
 <body class="selection:bg-amber-500/30">
     <div id="meshBg" class="bg-gradient-mesh"></div>
     <canvas id="backgroundCanvas"></canvas>
     
+    <!-- Theme Switcher -->
+    <div id="themeToggle" class="theme-btn glass-premium text-2xl" title="Change Style">
+        ✨
+    </div>
+
     <div class="relative z-10 min-h-screen flex flex-col items-center justify-between py-12 px-6">
         
         <!-- Header -->
@@ -134,7 +162,7 @@
             <h1 id="mainTitle" class="font-syne text-6xl md:text-9xl font-extrabold uppercase tracking-tighter title-gradient leading-none mb-4">
                 LOADING
             </h1>
-            <p id="subTitle" class="text-slate-400 text-sm md:text-base tracking-[0.3em] uppercase font-semibold opacity-70">
+            <p id="subTitle" class="text-slate-400 text-sm md:text-base tracking-[0.3em] uppercase font-semibold opacity-70" style="color: var(--text-sub)">
                 Seconds until a new chapter begins
             </p>
         </header>
@@ -143,19 +171,19 @@
         <div id="countdown" class="flex flex-wrap justify-center gap-4 md:gap-6">
             <div class="countdown-card glass-premium px-6 py-8 md:px-10 md:py-12 rounded-[2rem] text-center min-w-[120px] md:min-w-[160px]">
                 <div id="days" class="font-mono-modern text-5xl md:text-7xl font-bold glow-accent">00</div>
-                <div class="text-slate-500 uppercase text-[10px] md:text-xs tracking-widest mt-3 font-extrabold">Days</div>
+                <div class="uppercase text-[10px] md:text-xs tracking-widest mt-3 font-extrabold" style="color: var(--text-sub)">Days</div>
             </div>
             <div class="countdown-card glass-premium px-6 py-8 md:px-10 md:py-12 rounded-[2rem] text-center min-w-[120px] md:min-w-[160px]">
                 <div id="hours" class="font-mono-modern text-5xl md:text-7xl font-bold glow-accent">00</div>
-                <div class="text-slate-500 uppercase text-[10px] md:text-xs tracking-widest mt-3 font-extrabold">Hours</div>
+                <div class="uppercase text-[10px] md:text-xs tracking-widest mt-3 font-extrabold" style="color: var(--text-sub)">Hours</div>
             </div>
             <div class="countdown-card glass-premium px-6 py-8 md:px-10 md:py-12 rounded-[2rem] text-center min-w-[120px] md:min-w-[160px]">
                 <div id="minutes" class="font-mono-modern text-5xl md:text-7xl font-bold glow-accent">00</div>
-                <div class="text-slate-500 uppercase text-[10px] md:text-xs tracking-widest mt-3 font-extrabold">Minutes</div>
+                <div class="uppercase text-[10px] md:text-xs tracking-widest mt-3 font-extrabold" style="color: var(--text-sub)">Minutes</div>
             </div>
             <div class="countdown-card glass-premium px-6 py-8 md:px-10 md:py-12 rounded-[2rem] text-center min-w-[120px] md:min-w-[160px]">
-                <div id="seconds" class="font-mono-modern text-5xl md:text-7xl font-bold text-amber-400 glow-accent">00</div>
-                <div class="text-slate-500 uppercase text-[10px] md:text-xs tracking-widest mt-3 font-extrabold">Seconds</div>
+                <div id="seconds" class="font-mono-modern text-5xl md:text-7xl font-bold glow-accent">00</div>
+                <div class="uppercase text-[10px] md:text-xs tracking-widest mt-3 font-extrabold" style="color: var(--text-sub)">Seconds</div>
             </div>
         </div>
 
@@ -163,14 +191,16 @@
         <div class="w-full max-w-2xl space-y-6">
             <section class="glass-premium p-8 md:p-10 rounded-[2.5rem]">
                 <div class="flex items-center justify-between mb-8">
-                    <h2 class="font-syne text-xl text-white uppercase tracking-tight">Resolutions</h2>
-                    <span id="resCount" class="text-amber-500 text-xs font-bold font-mono-modern bg-amber-500/10 px-3 py-1 rounded-full">0 TOTAL</span>
+                    <h2 class="font-syne text-xl uppercase tracking-tight" style="color: var(--text-main)">Resolutions</h2>
+                    <span id="resCount" class="text-xs font-bold font-mono-modern px-3 py-1 rounded-full" style="background: var(--accent); color: var(--bg-end); opacity: 0.8">0 TOTAL</span>
                 </div>
                 
                 <div class="relative flex gap-3 mb-8">
                     <input type="text" id="resolutionInput" placeholder="Write your future here..." 
-                        class="flex-1 bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500/40 transition-all text-sm">
-                    <button id="addBtn" class="bg-white hover:bg-amber-400 text-black font-extrabold px-8 py-4 rounded-2xl transition-all active:scale-95 text-sm uppercase tracking-tighter">
+                        class="flex-1 bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500/40 transition-all text-sm"
+                        style="color: var(--text-main); border-color: var(--glass-border)">
+                    <button id="addBtn" class="font-extrabold px-8 py-4 rounded-2xl transition-all active:scale-95 text-sm uppercase tracking-tighter" 
+                        style="background: var(--accent); color: var(--bg-end)">
                         Add
                     </button>
                 </div>
@@ -182,7 +212,7 @@
         </div>
 
         <!-- Footer -->
-        <footer class="text-slate-600 text-[10px] tracking-[0.4em] uppercase font-bold">
+        <footer class="text-[10px] tracking-[0.4em] uppercase font-bold" style="color: var(--text-sub)">
             EST. <span id="yearSpan"></span> — GLOW DIGITAL
         </footer>
     </div>
@@ -191,6 +221,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             let resolutions = JSON.parse(localStorage.getItem('resolutions') || '[]');
             let hasCelebrated = false;
+            let currentTheme = localStorage.getItem('app-theme') || 'midnight';
 
             const canvas = document.getElementById('backgroundCanvas');
             const ctx = canvas.getContext('2d');
@@ -206,16 +237,48 @@
             const addBtn = document.getElementById('addBtn');
             const resolutionList = document.getElementById('resolutionList');
             const resCount = document.getElementById('resCount');
+            const themeToggle = document.getElementById('themeToggle');
             const countdownCards = document.querySelectorAll('.countdown-card');
 
-            // --- Particle Classes ---
+            // --- Theme Handling ---
+            const themes = ['midnight', 'frost', 'cyber'];
+            function applyTheme(theme) {
+                document.body.classList.remove('theme-midnight', 'theme-frost', 'theme-cyber');
+                if (theme !== 'midnight') document.body.classList.add(`theme-${theme}`);
+                localStorage.setItem('app-theme', theme);
+                
+                // Update particles color based on theme
+                particles.forEach(p => {
+                    const colors = {
+                        midnight: ['251, 191, 36', '255, 255, 255'],
+                        frost: ['6, 182, 212', '148, 163, 184'],
+                        cyber: ['244, 63, 94', '56, 189, 248']
+                    };
+                    const set = colors[theme];
+                    p.color = Math.random() > 0.8 ? set[0] : set[1];
+                });
+            }
+
+            themeToggle.addEventListener('click', () => {
+                const idx = (themes.indexOf(currentTheme) + 1) % themes.length;
+                currentTheme = themes[idx];
+                applyTheme(currentTheme);
+                themeToggle.innerText = currentTheme === 'midnight' ? '✨' : currentTheme === 'frost' ? '❄️' : '🚀';
+            });
+
+            // --- Particle System ---
             let particles = [];
             let fireworks = [];
             let confetti = [];
             const PARTICLE_COUNT = 60;
 
             function createParticle() {
-                const isGold = Math.random() > 0.8;
+                const colors = {
+                    midnight: ['251, 191, 36', '255, 255, 255'],
+                    frost: ['6, 182, 212', '148, 163, 184'],
+                    cyber: ['244, 63, 94', '56, 189, 248']
+                };
+                const set = colors[currentTheme] || colors.midnight;
                 return {
                     x: Math.random() * canvas.width,
                     y: Math.random() * canvas.height,
@@ -223,7 +286,7 @@
                     speedX: (Math.random() - 0.5) * 0.3,
                     speedY: (Math.random() - 0.5) * 0.3,
                     opacity: Math.random() * 0.4 + 0.1,
-                    color: isGold ? '251, 191, 36' : '255, 255, 255'
+                    color: Math.random() > 0.8 ? set[0] : set[1]
                 };
             }
 
@@ -234,10 +297,7 @@
                     this.color = color;
                     const angle = Math.random() * Math.PI * 2;
                     const force = Math.random() * 8 + 2;
-                    this.velocity = {
-                        x: Math.cos(angle) * force,
-                        y: Math.sin(angle) * force
-                    };
+                    this.velocity = { x: Math.cos(angle) * force, y: Math.sin(angle) * force };
                     this.alpha = 1;
                     this.friction = 0.95;
                     this.gravity = 0.1;
@@ -267,10 +327,7 @@
                     this.y = Math.random() * -canvas.height;
                     this.size = Math.random() * 10 + 5;
                     this.color = `hsl(${Math.random() * 360}, 80%, 60%)`;
-                    this.velocity = {
-                        x: (Math.random() - 0.5) * 3,
-                        y: Math.random() * 3 + 4
-                    };
+                    this.velocity = { x: (Math.random() - 0.5) * 3, y: Math.random() * 3 + 4 };
                     this.rotation = Math.random() * 360;
                     this.rotationSpeed = Math.random() * 10 - 5;
                 }
@@ -297,6 +354,7 @@
                 canvas.width = window.innerWidth;
                 canvas.height = window.innerHeight;
                 particles = Array.from({ length: PARTICLE_COUNT }, createParticle);
+                applyTheme(currentTheme);
             }
 
             function createFirework(x, y) {
@@ -310,10 +368,8 @@
             function animate() {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 
-                // Background Drift
                 particles.forEach(p => {
-                    p.x += p.speedX;
-                    p.y += p.speedY;
+                    p.x += p.speedX; p.y += p.speedY;
                     if (p.x < 0) p.x = canvas.width;
                     if (p.x > canvas.width) p.x = 0;
                     if (p.y < 0) p.y = canvas.height;
@@ -324,60 +380,34 @@
                     ctx.fill();
                 });
 
-                // Confetti
-                confetti.forEach(c => {
-                    c.update();
-                    c.draw();
-                });
-
-                // Fireworks
+                confetti.forEach(c => { c.update(); c.draw(); });
                 fireworks.forEach((f, index) => {
-                    if (f.alpha > 0) {
-                        f.update();
-                        f.draw();
-                    } else {
-                        fireworks.splice(index, 1);
-                    }
+                    if (f.alpha > 0) { f.update(); f.draw(); }
+                    else { fireworks.splice(index, 1); }
                 });
 
                 requestAnimationFrame(animate);
             }
 
-            // --- Celebration Trigger ---
+            // --- Celebration ---
             function triggerCelebration(year) {
                 if (hasCelebrated) return;
                 hasCelebrated = true;
-
                 meshBg.classList.add('celebration-bg');
                 mainTitle.innerText = `HAPPY ${year}`;
                 mainTitle.classList.add('animate-shake', 'rainbow');
                 subTitle.innerText = "A NEW CHAPTER HAS BEGUN.";
-                
-                countdownCards.forEach(card => card.classList.add('celebrate-card'));
-
-                // Initialize Confetti
+                countdownCards.forEach(card => card.style.transform = 'scale(1.1)');
                 for(let i=0; i<150; i++) confetti.push(new ConfettiPiece());
-
-                // Big Initial Burst
-                for(let i=0; i<5; i++) {
-                    setTimeout(() => {
-                        createFirework(Math.random() * canvas.width, Math.random() * canvas.height * 0.5);
-                    }, i * 200);
-                }
-
-                // Sustained Celebration
                 const burstInterval = setInterval(() => {
                     createFirework(Math.random() * canvas.width, Math.random() * (canvas.height * 0.7));
                 }, 600);
-
                 setTimeout(() => clearInterval(burstInterval), 20000);
             }
 
-            // --- Countdown Logic ---
             function updateCountdown() {
                 const now = new Date();
                 const nextYear = now.getFullYear() + 1;
-                // FOR TESTING: Change date here to 1 minute from now to see effect
                 const target = new Date(`January 1, ${nextYear} 00:00:00`);
                 const diff = target.getTime() - now.getTime();
 
@@ -397,15 +427,8 @@
                 hoursEl.innerText = h.toString().padStart(2, '0');
                 minutesEl.innerText = m.toString().padStart(2, '0');
                 secondsEl.innerText = s.toString().padStart(2, '0');
-                
-                // Final 10 seconds intensity
-                if (d === 0 && h === 0 && m === 0 && s <= 10) {
-                    secondsEl.classList.add('text-amber-400');
-                    if (s <= 5) mainTitle.classList.add('scale-110');
-                }
             }
 
-            // --- Resolutions ---
             function renderResolutions() {
                 resolutionList.innerHTML = '';
                 resCount.innerText = `${resolutions.length} TOTAL`;
@@ -413,9 +436,9 @@
                     const li = document.createElement('li');
                     li.className = 'resolution-item flex justify-between items-center group bg-white/[0.03] p-4 rounded-2xl border border-white/[0.05] hover:bg-white/[0.06] hover:border-amber-500/20 transition-all';
                     li.innerHTML = `
-                        <span class="text-slate-300 group-hover:text-white transition-colors text-sm font-medium">${res}</span>
-                        <button class="delete-res p-2 text-slate-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all" data-index="${index}">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <span style="color: var(--text-main); font-size: 0.875rem;">${res}</span>
+                        <button class="delete-res p-2 opacity-0 group-hover:opacity-100 transition-all" data-index="${index}">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" style="color: var(--text-sub)">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                             </svg>
                         </button>
