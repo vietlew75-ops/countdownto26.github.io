@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Midnight Glow | New Year Countdown</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Syne:wght@700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --accent: #fbbf24;
+            --accent-glow: rgba(251, 191, 36, 0.4);
+            --bg: #050505;
+        }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg);
+            color: white;
+            overflow: hidden;
+            margin: 0;
+        }
+        .font-syne { font-family: 'Syne', sans-serif; }
+        .font-mono-modern { font-family: 'Space Grotesk', monospace; }
+
+        /* Modern Glassmorphism */
+        .glass-premium {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+        }
+
+        .glow-accent {
+            filter: drop-shadow(0 0 15px var(--accent-glow));
+        }
+
+        /* Animated background gradient */
+        .bg-gradient-mesh {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% 50%, #1a1033 0%, #050505 100%);
+            z-index: -2;
+        }
+
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            opacity: 0.6;
+        }
+
+        .countdown-card {
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .countdown-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(251, 191, 36, 0.3);
+        }
+
+        .resolution-item {
+            animation: slideIn 0.4s ease-out forwards;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* Custom Scrollbar */
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(251, 191, 36, 0.2); border-radius: 10px; }
+        
+        .title-gradient {
+            background: linear-gradient(to bottom right, #fff 30%, #fbbf24 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+<body class="selection:bg-amber-500/30">
+    <div class="bg-gradient-mesh"></div>
+    <canvas id="backgroundCanvas"></canvas>
+    
+    <div class="relative z-10 min-h-screen flex flex-col items-center justify-between py-12 px-6">
+        
+        <!-- Header -->
+        <header class="text-center mt-8">
+            <h1 id="mainTitle" class="font-syne text-6xl md:text-9xl font-extrabold uppercase tracking-tighter title-gradient leading-none mb-4">
+                LOADING
+            </h1>
+            <p id="subTitle" class="text-slate-400 text-sm md:text-base tracking-[0.3em] uppercase font-semibold opacity-70">
+                Seconds until a new chapter begins
+            </p>
+        </header>
+
+        <!-- Countdown Container -->
+        <div id="countdown" class="flex flex-wrap justify-center gap-4 md:gap-6">
+            <div class="countdown-card glass-premium px-6 py-8 md:px-10 md:py-12 rounded-[2rem] text-center min-w-[120px] md:min-w-[160px]">
+                <div id="days" class="font-mono-modern text-5xl md:text-7xl font-bold glow-accent">00</div>
+                <div class="text-slate-500 uppercase text-[10px] md:text-xs tracking-widest mt-3 font-extrabold">Days</div>
+            </div>
+            <div class="countdown-card glass-premium px-6 py-8 md:px-10 md:py-12 rounded-[2rem] text-center min-w-[120px] md:min-w-[160px]">
+                <div id="hours" class="font-mono-modern text-5xl md:text-7xl font-bold glow-accent">00</div>
+                <div class="text-slate-500 uppercase text-[10px] md:text-xs tracking-widest mt-3 font-extrabold">Hours</div>
+            </div>
+            <div class="countdown-card glass-premium px-6 py-8 md:px-10 md:py-12 rounded-[2rem] text-center min-w-[120px] md:min-w-[160px]">
+                <div id="minutes" class="font-mono-modern text-5xl md:text-7xl font-bold glow-accent">00</div>
+                <div class="text-slate-500 uppercase text-[10px] md:text-xs tracking-widest mt-3 font-extrabold">Minutes</div>
+            </div>
+            <div class="countdown-card glass-premium px-6 py-8 md:px-10 md:py-12 rounded-[2rem] text-center min-w-[120px] md:min-w-[160px]">
+                <div id="seconds" class="font-mono-modern text-5xl md:text-7xl font-bold text-amber-400 glow-accent">00</div>
+                <div class="text-slate-500 uppercase text-[10px] md:text-xs tracking-widest mt-3 font-extrabold">Seconds</div>
+            </div>
+        </div>
+
+        <!-- Resolutions & Actions -->
+        <div class="w-full max-w-2xl space-y-6">
+            <section class="glass-premium p-8 md:p-10 rounded-[2.5rem]">
+                <div class="flex items-center justify-between mb-8">
+                    <h2 class="font-syne text-xl text-white uppercase tracking-tight">Resolutions</h2>
+                    <span id="resCount" class="text-amber-500 text-xs font-bold font-mono-modern bg-amber-500/10 px-3 py-1 rounded-full">0 TOTAL</span>
+                </div>
+                
+                <div class="relative flex gap-3 mb-8">
+                    <input type="text" id="resolutionInput" placeholder="Write your future here..." 
+                        class="flex-1 bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500/40 transition-all text-sm">
+                    <button id="addBtn" class="bg-white hover:bg-amber-400 text-black font-extrabold px-8 py-4 rounded-2xl transition-all active:scale-95 text-sm uppercase tracking-tighter">
+                        Add
+                    </button>
+                </div>
+
+                <ul id="resolutionList" class="space-y-3 max-h-56 overflow-y-auto pr-3 custom-scrollbar">
+                    <!-- Dynamic Items -->
+                </ul>
+            </section>
+        </div>
+
+        <!-- Footer -->
+        <footer class="text-slate-600 text-[10px] tracking-[0.4em] uppercase font-bold">
+            EST. <span id="yearSpan"></span> — GLOW DIGITAL
+        </footer>
+    </div>
+
+    <script>
+        /**
+         * Midnight Glow | All-in-one Logic
+         */
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- State ---
+            let resolutions = JSON.parse(localStorage.getItem('resolutions') || '[]');
+
+            // --- DOM References ---
+            const canvas = document.getElementById('backgroundCanvas');
+            const ctx = canvas.getContext('2d');
+            const daysEl = document.getElementById('days');
+            const hoursEl = document.getElementById('hours');
+            const minutesEl = document.getElementById('minutes');
+            const secondsEl = document.getElementById('seconds');
+            const mainTitle = document.getElementById('mainTitle');
+            const subTitle = document.getElementById('subTitle');
+            const yearSpan = document.getElementById('yearSpan');
+            const resolutionInput = document.getElementById('resolutionInput');
+            const addBtn = document.getElementById('addBtn');
+            const resolutionList = document.getElementById('resolutionList');
+            const resCount = document.getElementById('resCount');
+
+            // --- Particles ---
+            let particles = [];
+            const PARTICLE_COUNT = 80;
+
+            function createParticle() {
+                const isGold = Math.random() > 0.8;
+                return {
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: Math.random() * 1.5 + 0.5,
+                    speedX: (Math.random() - 0.5) * 0.3,
+                    speedY: (Math.random() - 0.5) * 0.3,
+                    opacity: Math.random() * 0.4 + 0.1,
+                    color: isGold ? '251, 191, 36' : '255, 255, 255'
+                };
+            }
+
+            function setupCanvas() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+                particles = Array.from({ length: PARTICLE_COUNT }, createParticle);
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                particles.forEach(p => {
+                    p.x += p.speedX;
+                    p.y += p.speedY;
+
+                    if (p.x < 0) p.x = canvas.width;
+                    if (p.x > canvas.width) p.x = 0;
+                    if (p.y < 0) p.y = canvas.height;
+                    if (p.y > canvas.height) p.y = 0;
+
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(${p.color}, ${p.opacity})`;
+                    ctx.fill();
+                });
+                requestAnimationFrame(animate);
+            }
+
+            // --- Countdown Logic ---
+            function updateCountdown() {
+                const now = new Date();
+                const nextYear = now.getFullYear() + 1;
+                const target = new Date(`January 1, ${nextYear} 00:00:00`);
+                const diff = target.getTime() - now.getTime();
+
+                if (diff <= 0) {
+                    mainTitle.innerText = `HAPPY ${now.getFullYear()}`;
+                    subTitle.innerText = "The future has arrived.";
+                    [daysEl, hoursEl, minutesEl, secondsEl].forEach(el => el.innerText = "00");
+                    return;
+                }
+
+                const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
+                const m = Math.floor((diff / (1000 * 60)) % 60);
+                const s = Math.floor((diff / 1000) % 60);
+
+                mainTitle.innerText = `${nextYear}`;
+                daysEl.innerText = d.toString().padStart(2, '0');
+                hoursEl.innerText = h.toString().padStart(2, '0');
+                minutesEl.innerText = m.toString().padStart(2, '0');
+                secondsEl.innerText = s.toString().padStart(2, '0');
+            }
+
+            // --- Resolutions Management ---
+            function renderResolutions() {
+                resolutionList.innerHTML = '';
+                resCount.innerText = `${resolutions.length} TOTAL`;
+
+                resolutions.forEach((res, index) => {
+                    const li = document.createElement('li');
+                    li.className = 'resolution-item flex justify-between items-center group bg-white/[0.03] p-4 rounded-2xl border border-white/[0.05] hover:bg-white/[0.06] hover:border-amber-500/20 transition-all';
+                    li.innerHTML = `
+                        <span class="text-slate-300 group-hover:text-white transition-colors text-sm font-medium">${res}</span>
+                        <button class="delete-res p-2 text-slate-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all" data-index="${index}">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    `;
+                    resolutionList.appendChild(li);
+                });
+
+                // Re-attach delete listeners
+                document.querySelectorAll('.delete-res').forEach(btn => {
+                    btn.onclick = (e) => {
+                        const index = parseInt(e.currentTarget.getAttribute('data-index'));
+                        resolutions.splice(index, 1);
+                        localStorage.setItem('resolutions', JSON.stringify(resolutions));
+                        renderResolutions();
+                    };
+                });
+            }
+
+            // --- Interaction ---
+            addBtn.addEventListener('click', () => {
+                const text = resolutionInput.value.trim();
+                if (text) {
+                    resolutions.unshift(text); // Add to top
+                    resolutionInput.value = '';
+                    localStorage.setItem('resolutions', JSON.stringify(resolutions));
+                    renderResolutions();
+                }
+            });
+
+            resolutionInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') addBtn.click();
+            });
+
+            // --- Init ---
+            setupCanvas();
+            animate();
+            renderResolutions();
+            updateCountdown();
+            setInterval(updateCountdown, 1000);
+            yearSpan.innerText = new Date().getFullYear().toString();
+            window.addEventListener('resize', setupCanvas);
+        });
+    </script>
+</body>
+</html>
