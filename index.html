@@ -46,6 +46,11 @@
             height: 100%;
             background: radial-gradient(circle at 50% 50%, #1a1033 0%, #050505 100%);
             z-index: -2;
+            transition: background 3s ease;
+        }
+
+        .celebration-bg {
+            background: radial-gradient(circle at 50% 50%, #4c1d95 0%, #050505 100%) !important;
         }
 
         canvas {
@@ -53,15 +58,21 @@
             top: 0;
             left: 0;
             z-index: -1;
-            opacity: 0.6;
+            opacity: 0.8;
         }
 
         .countdown-card {
-            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
         .countdown-card:hover {
             transform: translateY(-5px);
             border-color: rgba(251, 191, 36, 0.3);
+        }
+
+        .celebrate-card {
+            transform: scale(1.1);
+            border-color: rgba(251, 191, 36, 0.6) !important;
+            box-shadow: 0 0 50px rgba(251, 191, 36, 0.2);
         }
 
         .resolution-item {
@@ -71,6 +82,33 @@
         @keyframes slideIn {
             from { opacity: 0; transform: translateX(-10px); }
             to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(3px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(1px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+
+        .animate-shake {
+            animation: shake 0.3s infinite;
+        }
+
+        @keyframes rainbow-text {
+            0% { filter: hue-rotate(0deg); }
+            100% { filter: hue-rotate(360deg); }
+        }
+
+        .rainbow {
+            animation: rainbow-text 4s linear infinite;
         }
 
         /* Custom Scrollbar */
@@ -86,7 +124,7 @@
     </style>
 </head>
 <body class="selection:bg-amber-500/30">
-    <div class="bg-gradient-mesh"></div>
+    <div id="meshBg" class="bg-gradient-mesh"></div>
     <canvas id="backgroundCanvas"></canvas>
     
     <div class="relative z-10 min-h-screen flex flex-col items-center justify-between py-12 px-6">
@@ -150,16 +188,13 @@
     </div>
 
     <script>
-        /**
-         * Midnight Glow | All-in-one Logic
-         */
         document.addEventListener('DOMContentLoaded', () => {
-            // --- State ---
             let resolutions = JSON.parse(localStorage.getItem('resolutions') || '[]');
+            let hasCelebrated = false;
 
-            // --- DOM References ---
             const canvas = document.getElementById('backgroundCanvas');
             const ctx = canvas.getContext('2d');
+            const meshBg = document.getElementById('meshBg');
             const daysEl = document.getElementById('days');
             const hoursEl = document.getElementById('hours');
             const minutesEl = document.getElementById('minutes');
@@ -171,10 +206,13 @@
             const addBtn = document.getElementById('addBtn');
             const resolutionList = document.getElementById('resolutionList');
             const resCount = document.getElementById('resCount');
+            const countdownCards = document.querySelectorAll('.countdown-card');
 
-            // --- Particles ---
+            // --- Particle Classes ---
             let particles = [];
-            const PARTICLE_COUNT = 80;
+            let fireworks = [];
+            let confetti = [];
+            const PARTICLE_COUNT = 60;
 
             function createParticle() {
                 const isGold = Math.random() > 0.8;
@@ -189,41 +227,162 @@
                 };
             }
 
+            class FireworkParticle {
+                constructor(x, y, color) {
+                    this.x = x;
+                    this.y = y;
+                    this.color = color;
+                    const angle = Math.random() * Math.PI * 2;
+                    const force = Math.random() * 8 + 2;
+                    this.velocity = {
+                        x: Math.cos(angle) * force,
+                        y: Math.sin(angle) * force
+                    };
+                    this.alpha = 1;
+                    this.friction = 0.95;
+                    this.gravity = 0.1;
+                }
+                draw() {
+                    ctx.save();
+                    ctx.globalAlpha = this.alpha;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, 2.5, 0, Math.PI * 2, false);
+                    ctx.fillStyle = this.color;
+                    ctx.fill();
+                    ctx.restore();
+                }
+                update() {
+                    this.velocity.x *= this.friction;
+                    this.velocity.y *= this.friction;
+                    this.velocity.y += this.gravity;
+                    this.x += this.velocity.x;
+                    this.y += this.velocity.y;
+                    this.alpha -= 0.012;
+                }
+            }
+
+            class ConfettiPiece {
+                constructor() {
+                    this.x = Math.random() * canvas.width;
+                    this.y = Math.random() * -canvas.height;
+                    this.size = Math.random() * 10 + 5;
+                    this.color = `hsl(${Math.random() * 360}, 80%, 60%)`;
+                    this.velocity = {
+                        x: (Math.random() - 0.5) * 3,
+                        y: Math.random() * 3 + 4
+                    };
+                    this.rotation = Math.random() * 360;
+                    this.rotationSpeed = Math.random() * 10 - 5;
+                }
+                draw() {
+                    ctx.save();
+                    ctx.translate(this.x, this.y);
+                    ctx.rotate(this.rotation * Math.PI / 180);
+                    ctx.fillStyle = this.color;
+                    ctx.fillRect(-this.size/2, -this.size/2, this.size, this.size);
+                    ctx.restore();
+                }
+                update() {
+                    this.y += this.velocity.y;
+                    this.x += Math.sin(this.y * 0.05) * 2;
+                    this.rotation += this.rotationSpeed;
+                    if (this.y > canvas.height) {
+                        this.y = -20;
+                        this.x = Math.random() * canvas.width;
+                    }
+                }
+            }
+
             function setupCanvas() {
                 canvas.width = window.innerWidth;
                 canvas.height = window.innerHeight;
                 particles = Array.from({ length: PARTICLE_COUNT }, createParticle);
             }
 
+            function createFirework(x, y) {
+                const colors = ['#fbbf24', '#f472b6', '#60a5fa', '#34d399', '#ffffff', '#a855f7'];
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                for (let i = 0; i < 60; i++) {
+                    fireworks.push(new FireworkParticle(x, y, color));
+                }
+            }
+
             function animate() {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // Background Drift
                 particles.forEach(p => {
                     p.x += p.speedX;
                     p.y += p.speedY;
-
                     if (p.x < 0) p.x = canvas.width;
                     if (p.x > canvas.width) p.x = 0;
                     if (p.y < 0) p.y = canvas.height;
                     if (p.y > canvas.height) p.y = 0;
-
                     ctx.beginPath();
                     ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
                     ctx.fillStyle = `rgba(${p.color}, ${p.opacity})`;
                     ctx.fill();
                 });
+
+                // Confetti
+                confetti.forEach(c => {
+                    c.update();
+                    c.draw();
+                });
+
+                // Fireworks
+                fireworks.forEach((f, index) => {
+                    if (f.alpha > 0) {
+                        f.update();
+                        f.draw();
+                    } else {
+                        fireworks.splice(index, 1);
+                    }
+                });
+
                 requestAnimationFrame(animate);
+            }
+
+            // --- Celebration Trigger ---
+            function triggerCelebration(year) {
+                if (hasCelebrated) return;
+                hasCelebrated = true;
+
+                meshBg.classList.add('celebration-bg');
+                mainTitle.innerText = `HAPPY ${year}`;
+                mainTitle.classList.add('animate-shake', 'rainbow');
+                subTitle.innerText = "A NEW CHAPTER HAS BEGUN.";
+                
+                countdownCards.forEach(card => card.classList.add('celebrate-card'));
+
+                // Initialize Confetti
+                for(let i=0; i<150; i++) confetti.push(new ConfettiPiece());
+
+                // Big Initial Burst
+                for(let i=0; i<5; i++) {
+                    setTimeout(() => {
+                        createFirework(Math.random() * canvas.width, Math.random() * canvas.height * 0.5);
+                    }, i * 200);
+                }
+
+                // Sustained Celebration
+                const burstInterval = setInterval(() => {
+                    createFirework(Math.random() * canvas.width, Math.random() * (canvas.height * 0.7));
+                }, 600);
+
+                setTimeout(() => clearInterval(burstInterval), 20000);
             }
 
             // --- Countdown Logic ---
             function updateCountdown() {
                 const now = new Date();
                 const nextYear = now.getFullYear() + 1;
+                // FOR TESTING: Change date here to 1 minute from now to see effect
                 const target = new Date(`January 1, ${nextYear} 00:00:00`);
                 const diff = target.getTime() - now.getTime();
 
                 if (diff <= 0) {
-                    mainTitle.innerText = `HAPPY ${now.getFullYear()}`;
-                    subTitle.innerText = "The future has arrived.";
+                    triggerCelebration(now.getFullYear());
                     [daysEl, hoursEl, minutesEl, secondsEl].forEach(el => el.innerText = "00");
                     return;
                 }
@@ -238,13 +397,18 @@
                 hoursEl.innerText = h.toString().padStart(2, '0');
                 minutesEl.innerText = m.toString().padStart(2, '0');
                 secondsEl.innerText = s.toString().padStart(2, '0');
+                
+                // Final 10 seconds intensity
+                if (d === 0 && h === 0 && m === 0 && s <= 10) {
+                    secondsEl.classList.add('text-amber-400');
+                    if (s <= 5) mainTitle.classList.add('scale-110');
+                }
             }
 
-            // --- Resolutions Management ---
+            // --- Resolutions ---
             function renderResolutions() {
                 resolutionList.innerHTML = '';
                 resCount.innerText = `${resolutions.length} TOTAL`;
-
                 resolutions.forEach((res, index) => {
                     const li = document.createElement('li');
                     li.className = 'resolution-item flex justify-between items-center group bg-white/[0.03] p-4 rounded-2xl border border-white/[0.05] hover:bg-white/[0.06] hover:border-amber-500/20 transition-all';
@@ -259,7 +423,6 @@
                     resolutionList.appendChild(li);
                 });
 
-                // Re-attach delete listeners
                 document.querySelectorAll('.delete-res').forEach(btn => {
                     btn.onclick = (e) => {
                         const index = parseInt(e.currentTarget.getAttribute('data-index'));
@@ -270,11 +433,10 @@
                 });
             }
 
-            // --- Interaction ---
             addBtn.addEventListener('click', () => {
                 const text = resolutionInput.value.trim();
                 if (text) {
-                    resolutions.unshift(text); // Add to top
+                    resolutions.unshift(text);
                     resolutionInput.value = '';
                     localStorage.setItem('resolutions', JSON.stringify(resolutions));
                     renderResolutions();
@@ -285,7 +447,6 @@
                 if (e.key === 'Enter') addBtn.click();
             });
 
-            // --- Init ---
             setupCanvas();
             animate();
             renderResolutions();
